@@ -99,13 +99,40 @@ int main(void)
         } else {
             if(TimeGetSecFlag() == 0x80) {
                 TimeSetSecFlag(0x00);
+                
+                //Read water level 
+                if(ButtonReadWater() == 0x80) {
+                    if(ButtonReadWaterFlag() == 0) {
+                        ButtonSetWaterFlag(1);
+                    }
+                } else {
+                    if(ButtonReadWaterFlag() == 1) {
+                        ButtonSetWaterFlag(0);
+                        TimeSetNutritionFlag(1);//statrt
+                        PumpSetNutrition(1);//open 
+                        //cloose Remind add water
+                        LedSedNeedwater(0);
+                        TimeSetDay(0x00);//clear
+                    }
+                }    
+                //Read
+                if(TimeGetNutritionFlag() > 2){
+                    PumpSetNutrition(0);//close 
+                    TimeSetNutritionFlag(0);//end
+                }
+                //Read day
+                if(TimeGetDay() >= 14) {
+                    TimeSetDay(0x00);//clear
+                    //Remind add water
+                    LedSedNeedwater(1);
+                }
+                
                 //cloose
                 TimeSetLightFlag(1);//clear
                 TimeSetWaterFlag(1);//clear
                 TempSetLight(0);
                 PumpSetWater(0);
                 TempSetHat(0);
-                PumpSetNutrition(0);
             }
         }
        if(ButtonReadSwitch() == 0x80) {
