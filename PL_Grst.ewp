@@ -597,7 +597,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$TOOLKIT_DIR$\config\lnkstm8s103f3.icf</state>
+          <state>$TOOLKIT_DIR$\config\lnkstm8.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1578,10 +1578,22 @@
     <name>$PROJ_DIR$\Eeprom.c</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\Led.c</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\main.c</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\Pump.c</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\Sys.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\Temp.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\Time.c</name>
   </file>
 </project>
 
