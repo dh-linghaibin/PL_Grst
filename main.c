@@ -19,6 +19,7 @@ int main(void)
     INTEN
     while(1) {
         if(LedGetSwitch() == 0x80) {
+            LedSwitchService();
             if(TimeGetSecFlag() == 0x80) {
                 TimeSetSecFlag(0x00);
                 //Read water level 
@@ -31,14 +32,22 @@ int main(void)
                         ButtonSetWaterFlag(0);
                         TimeSetNutritionFlag(1);//statrt
                         PumpSetNutrition(1);//open 
+                        //cloose Remind add water
+                        LedSedNeedwater(0);
+                        TimeSetDay(0x00);//clear
                     }
-                }
-                    
+                }    
                 //Read
                 if(TimeGetNutritionFlag() > 2){
                     PumpSetNutrition(0);//close 
                     TimeSetNutritionFlag(0);//end
-                } 
+                }
+                //Read day
+                if(TimeGetDay() >= 14) {
+                    TimeSetDay(0x00);//clear
+                    //Remind add water
+                    LedSedNeedwater(1);
+                }
                 if(ButtonReadWaterFlag() == 0) { 
                     //Read temperature
                     if(TempGetAD(TEMP_CH) < 29137) {

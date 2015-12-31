@@ -18,4 +18,7 @@ void TimeSetWaterFlag(u8 cmd);
 u16 TimeGetNutritionFlag(void);
 void TimeSetNutritionFlag(u8 cmd);
 
+u8 TimeGetDay(void);
+void TimeSetDay(u8 cmd);
+
 #endif
