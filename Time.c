@@ -49,7 +49,7 @@ u16 TimeGetLightFlag(void) {
     return time_light_flag;
 }
 
-void TimeSetLightFlag(u8 cmd) {
+void TimeSetLightFlag(u16 cmd) {
     time_light_flag = cmd;
 }
 /*
@@ -61,7 +61,7 @@ u16 TimeGetWaterFlag(void) {
     return time_water_flag;
 }
 
-void TimeSetWaterFlag(u8 cmd) {
+void TimeSetWaterFlag(u16 cmd) {
     time_water_flag = cmd;
 }
 /*

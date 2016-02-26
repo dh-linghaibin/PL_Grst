@@ -71,16 +71,26 @@ u8 ButtonReadWater(void) {
 
 u8 ButtonReadSwitch(void) {
     static u16 buntu_count = 0;
+    static u8 buntu_count_small = 0;
     if(BUTTON_SWITCH == 1) {
-        if(buntu_count < 1000) {
-            buntu_count++;
+        if(buntu_count < 2000) {
+            if(buntu_count_small < 100) {
+                buntu_count_small++;
+            } else {
+                buntu_count_small = 0;
+                buntu_count++;
+            }
         } else {
-            if(buntu_count == 1000) {
+            if(buntu_count == 2000) {
                 buntu_count++;
                 return 0x80;
             }
         }
     } else {
+        if( (buntu_count > 50) && (buntu_count < 2000) ){
+            buntu_count = 0;
+            return 0x90;
+        }
         buntu_count = 0;
     }
     return 0x00;

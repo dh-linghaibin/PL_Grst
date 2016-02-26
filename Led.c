@@ -39,21 +39,26 @@ void LedInit(void) {
     LedSetPeriod(0);
 }
 
+
+//没有水后提醒
 static u8 led_need_water = 0;
 
 void LedSedNeedwater(u8 cmd) {
-    led_need_water = 0;
+    led_need_water = cmd;
 }
 
 void LedSwitchService(void) {
     static u16 count = 0;
+    static u8 bit = 0;
     if(led_need_water == 1) {
         count++;
         if(count > 50000) {
             count = 0;
-            if(Led_SWITCH == 0) {
+            if(bit == 0) {
+                bit = 1;
                 Led_SWITCH = 1;
             } else {
+                bit = 0;
                 Led_SWITCH = 0;
             }
         }

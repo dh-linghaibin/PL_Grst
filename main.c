@@ -6,6 +6,7 @@
 #include "Pump.h"
 #include "Time.h"
 #include "Eeprom.h"
+#include "Grsttime.h"
 
 int main(void)
 {
@@ -16,14 +17,17 @@ int main(void)
     LedInit();
     TempInit();
     PumpInit();
-    INTEN
+    GrsttimeInit();
+    INTEN                                                                                    
     while(1) {
+        u8 bun_bit = 0;
         if(LedGetSwitch() == 0x80) {
             LedSwitchService();
             if(TimeGetSecFlag() == 0x80) {
                 TimeSetSecFlag(0x00);
                 //Read water level 
                 if(ButtonReadWater() == 0x80) {
+                    LedSedNeedwater(1);
                     if(ButtonReadWaterFlag() == 0) {
                         ButtonSetWaterFlag(1);
                     }
@@ -31,16 +35,16 @@ int main(void)
                     if(ButtonReadWaterFlag() == 1) {
                         ButtonSetWaterFlag(0);
                         TimeSetNutritionFlag(1);//statrt
-                        PumpSetNutrition(1);//open 
+                        PumpSetNutrition(0);//open   //test
                         //cloose Remind add water
                         LedSedNeedwater(0);
                         TimeSetDay(0x00);//clear
                     }
                 }    
                 //Read
-                if(TimeGetNutritionFlag() > 2){
+                if(TimeGetNutritionFlag() > 2){ //时间1
                     PumpSetNutrition(0);//close 
-                    TimeSetNutritionFlag(0);//end
+                    TimeSetNutritionFlag(0);//end   2016/1/19/ for test so clear
                 }
                 //Read day
                 if(TimeGetDay() >= 14) {
@@ -58,25 +62,30 @@ int main(void)
                         TempSetHat(0);
                     }
                     //light arrived
-                    if(TimeGetLightFlag() > 5) {
-                        if(TimeGetLightFlag() > 5+5) {
+                    if(TimeGetLightFlag() > 7200) {//补光LED灯（大灯）
+                        static u8 light_bit = 0;
+                        if(TimeGetLightFlag() > 7200+GrstReadLightTime() ) {
                             TimeSetLightFlag(1);//clear
                             //cloose
-                            TempSetLight(0);
-                        } else if(TimeGetLightFlag() > 5) {
+                            if(light_bit == 1) {
+                                light_bit = 0;
+                                TempSetLight(0);
+                            }
+                        } else if(TimeGetLightFlag() > 7200) {
                              //open light 
-                            TempSetLight(1);
+                            if(light_bit == 0) {
+                                light_bit = 1;
+                                TempSetLight(1);
+                            }
                         }
                     }
                     //weater arrived
-                    if(TimeGetWaterFlag() > 2) {
-                        
-                        
-                        if(TimeGetWaterFlag() > 2+2) {
+                    if(TimeGetWaterFlag() > GrstReadWaterTime()) {//洒水的水泵（不是营养泵）
+                        if(TimeGetWaterFlag() > GrstReadWaterTime()+60) {//打开多久后关闭
                             TimeSetWaterFlag(1);//clear
                             //cloose
                             PumpSetWater(0);
-                        } else if(TimeGetWaterFlag() > 2) {
+                        } else if(TimeGetWaterFlag() > GrstReadWaterTime()) {//打开的时间
                             //open Water
                             PumpSetWater(1);
                         }
@@ -91,15 +100,21 @@ int main(void)
                 }
             }
             if(ButtonReadSpecies() > 0x00) {
-                LedSetSpecies(ButtonReadSpeciesFlag());            
+                LedSetSpecies(ButtonReadSpeciesFlag());     
             } 
             if(ButtonReadPeriod() > 0x00) {
                 LedSetPeriod(ButtonReadPeriodFlag());
+                if(ButtonReadPeriodFlag() == 1) {
+                    GrstSetWaterTime(3600);
+                    GrstSetLightTime(3600);//1512
+                } else if(ButtonReadPeriodFlag() == 2){
+                    GrstSetWaterTime(7200);
+                    GrstSetLightTime(3000);//1800
+                }
             }
         } else {
             if(TimeGetSecFlag() == 0x80) {
                 TimeSetSecFlag(0x00);
-                
                 //Read water level 
                 if(ButtonReadWater() == 0x80) {
                     if(ButtonReadWaterFlag() == 0) {
@@ -130,13 +145,26 @@ int main(void)
                 //cloose
                 TimeSetLightFlag(1);//clear
                 TimeSetWaterFlag(1);//clear
+                PumpSetNutrition(0);//close 
                 TempSetLight(0);
                 PumpSetWater(0);
                 TempSetHat(0);
             }
         }
-       if(ButtonReadSwitch() == 0x80) {
+        bun_bit = ButtonReadSwitch();
+       if(bun_bit == 0x80) {
             LedSetSwitch();
-        }
+            TimeSetLightFlag(7201);//clear
+            TimeSetWaterFlag(GrstReadWaterTime()+1);//clear
+       } else if(bun_bit == 0x90) {
+            static u8 bit = 0;
+            if(bit == 0) {
+                bit = 1;
+                TempSetLight(1);
+            } else {
+                bit = 0;
+                TempSetLight(0);
+            }
+       }
     }
 }
