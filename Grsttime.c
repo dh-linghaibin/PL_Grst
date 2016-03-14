@@ -3,8 +3,9 @@
 #include "Grsttime.h"
 #include "Eeprom.h"
 
+//µÆ¹â¿ØÖÆ
 static u16 grst_light_time = 3600;
-static u16 grst_water_time = 3600;
+static u16 grst_water_time = 7200;
 
 void GrsttimeInit(void) {
     if(EepromRead(30) != 0x55) {

@@ -4,7 +4,7 @@
 
 #include "Type.h"
 
-#define TEMP_CH 4
+#define TEMP_CH 3
 
 void TempInit(void);
 u16 TempGetAD(u8 chx);

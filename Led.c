@@ -3,40 +3,36 @@
 #include "Led.h"
 #include "Button.h"
 
-#define Led_FRUITS       PD_ODR_ODR4
-#define Led_FLOWERS      PD_ODR_ODR5
-#define Led_SWITCH       PD_ODR_ODR6
-#define Led_SEEDLING     PB_ODR_ODR5
-#define Led_MATURE       PB_ODR_ODR4
+//指示led区域
+#define LED_SWITCH      PC_ODR_ODR3 
+#define LED_LIGHT       PC_ODR_ODR2
+#define LED_SEEDLING    PC_ODR_ODR4
+#define LED_GROW        PC_ODR_ODR5
+#define LED_FRUIT       PC_ODR_ODR6
 
-static u8 led_switch_flag = 0;
+
 
 void LedInit(void) {
-    PD_DDR_DDR4 = 1;
-    PD_CR1_C14 = 1;
-    PD_CR2_C24 = 0;
+    PC_DDR_DDR2 = 1;//灯
+    PC_CR1_C12 = 1;
+    PC_CR2_C22 = 0;
     
-    PD_DDR_DDR5 = 1;
-    PD_CR1_C15 = 1;
-    PD_CR2_C25 = 0;
+    PC_DDR_DDR3 = 1;//开关
+    PC_CR1_C13 = 1;
+    PC_CR2_C23 = 0;
     
-    PD_DDR_DDR6 = 1;
-    PD_CR1_C16 = 1;
-    PD_CR2_C26 = 0;
+    PC_DDR_DDR4 = 1;//幼苗
+    PC_CR1_C14 = 1;
+    PC_CR2_C24 = 0;
     
-    PB_DDR_DDR4 = 1;
-    PB_CR1_C14 = 1;
-    PB_CR2_C24 = 0;
+    PC_DDR_DDR5 = 1;//生长
+    PC_CR1_C15 = 1;
+    PC_CR2_C25 = 0;
     
-    PB_DDR_DDR5 = 1;
-    PB_CR1_C15 = 1;
-    PB_CR2_C25 = 0;
-    
-    led_switch_flag = 0;
-    Led_SWITCH = 1;
-    
-    LedSetSpecies(0);
-    LedSetPeriod(0);
+    PC_DDR_DDR6 = 1;//花果
+    PC_CR1_C16 = 1;
+    PC_CR2_C26 = 0;
+
 }
 
 
@@ -46,7 +42,7 @@ static u8 led_need_water = 0;
 void LedSedNeedwater(u8 cmd) {
     led_need_water = cmd;
 }
-
+//没有水灯闪烁
 void LedSwitchService(void) {
     static u16 count = 0;
     static u8 bit = 0;
@@ -56,55 +52,43 @@ void LedSwitchService(void) {
             count = 0;
             if(bit == 0) {
                 bit = 1;
-                Led_SWITCH = 1;
+                LED_SWITCH = 1;
             } else {
                 bit = 0;
-                Led_SWITCH = 0;
+                LED_SWITCH = 0;
             }
         }
     }
 }
 
-void LedSetSwitch(void) {
-    if(led_switch_flag == 0) {
-        led_switch_flag = 0x80;
-        Led_SWITCH = 0;
-        LedSetSpecies(ButtonReadSpeciesFlag());   
-        LedSetPeriod(ButtonReadPeriodFlag());
+void LedSetSwitch(u8 cmd) {
+    if(cmd == 0) {
+        LED_SWITCH = 0;
     } else {
-        led_switch_flag = 0;
-        Led_SWITCH = 1;
-        LedSetSpecies(0);
-        LedSetPeriod(0);
+        LED_SWITCH = 1;
     }
 }
 
-u8 LedGetSwitch(void) {
-    return led_switch_flag;
-}
 
-void LedSetSpecies(u8 cmd) {
-    if(cmd == 1) {
-        Led_FRUITS = 0;
-        Led_FLOWERS = 1;
-    } else if(cmd == 2) {
-        Led_FRUITS = 1;
-        Led_FLOWERS = 0;
+//led指示灯设置
+void LedSetLight(u8 cmd) {
+    if(cmd == 0) {
+        LED_LIGHT = 0;
     } else {
-        Led_FRUITS = 1;
-        Led_FLOWERS = 1;
+        LED_LIGHT = 1;
+    }
+}
+//三种模式灯设置
+void LedSetMode(u8 cmd) {
+    switch(cmd) {
+        case 0:LED_SEEDLING = 0;LED_GROW = 1;LED_FRUIT = 1;
+        break;
+        case 1:LED_SEEDLING = 1;LED_GROW = 0;LED_FRUIT = 1;
+        break;
+        case 2:LED_SEEDLING = 1;LED_GROW = 1;LED_FRUIT = 0;
+        break;
+        default:break;
     }
 }
 
-void LedSetPeriod(u8 cmd) {
-    if(cmd == 1) {
-        Led_SEEDLING = 0;
-        Led_MATURE = 1;
-    } else if(cmd == 2) {
-        Led_SEEDLING = 1;
-        Led_MATURE = 0;
-    } else {
-        Led_SEEDLING = 1;
-        Led_MATURE = 1;
-    }
-}
+

@@ -8,6 +8,7 @@
 #include "Eeprom.h"
 #include "Grsttime.h"
 
+
 int main(void)
 {
     SysInit();
@@ -21,7 +22,7 @@ int main(void)
     INTEN                                                                                    
     while(1) {
         u8 bun_bit = 0;
-        if(LedGetSwitch() == 0x80) {
+        if(ButtonGetSwitch() == 0x80) {//判断是否已经打开
             LedSwitchService();
             if(TimeGetSecFlag() == 0x80) {
                 TimeSetSecFlag(0x00);
@@ -62,33 +63,24 @@ int main(void)
                         TempSetHat(0);
                     }
                     //light arrived
-                    if(TimeGetLightFlag() > 7200) {//补光LED灯（大灯）
-                        static u8 light_bit = 0;
-                        if(TimeGetLightFlag() > 7200+GrstReadLightTime() ) {
-                            TimeSetLightFlag(1);//clear
-                            //cloose
-                            if(light_bit == 1) {
-                                light_bit = 0;
-                                TempSetLight(0);
-                            }
-                        } else if(TimeGetLightFlag() > 7200) {
-                             //open light 
-                            if(light_bit == 0) {
-                                light_bit = 1;
-                                TempSetLight(1);
-                            }
-                        }
+                    if(TimeGetLightFlag() < GrstReadLightTime() ) {//补光LED灯（大灯）
+                        //open light 
+                        TempSetLight(1);
+                    } else if(TimeGetLightFlag() < 3600+GrstReadLightTime()) {
+                        //cloose
+                        TempSetLight(0);
+                    } else if(TimeGetLightFlag() > 3600+GrstReadLightTime()){
+                        TimeSetLightFlag(1);//clear
                     }
                     //weater arrived
-                    if(TimeGetWaterFlag() > GrstReadWaterTime()) {//洒水的水泵（不是营养泵）
-                        if(TimeGetWaterFlag() > GrstReadWaterTime()+60) {//打开多久后关闭
-                            TimeSetWaterFlag(1);//clear
-                            //cloose
-                            PumpSetWater(0);
-                        } else if(TimeGetWaterFlag() > GrstReadWaterTime()) {//打开的时间
-                            //open Water
-                            PumpSetWater(1);
-                        }
+                    if(TimeGetWaterFlag() < GrstReadWaterTime()) {//洒水的水泵（不是营养泵）
+                        //open Water
+                        PumpSetWater(1);  
+                    } else if(TimeGetWaterFlag() < GrstReadWaterTime()+7200) {
+                        //cloose
+                        PumpSetWater(0);
+                    } else if(TimeGetWaterFlag() > GrstReadWaterTime()+7200){
+                        TimeSetWaterFlag(1);//clear
                     }
                 } else {
                     //cloose
@@ -97,19 +89,6 @@ int main(void)
                     TempSetLight(0);
                     PumpSetWater(0);
                     TempSetHat(0);
-                }
-            }
-            if(ButtonReadSpecies() > 0x00) {
-                LedSetSpecies(ButtonReadSpeciesFlag());     
-            } 
-            if(ButtonReadPeriod() > 0x00) {
-                LedSetPeriod(ButtonReadPeriodFlag());
-                if(ButtonReadPeriodFlag() == 1) {
-                    GrstSetWaterTime(3600);
-                    GrstSetLightTime(3600);//1512
-                } else if(ButtonReadPeriodFlag() == 2){
-                    GrstSetWaterTime(7200);
-                    GrstSetLightTime(3000);//1800
                 }
             }
         } else {
@@ -151,20 +130,28 @@ int main(void)
                 TempSetHat(0);
             }
         }
-        bun_bit = ButtonReadSwitch();
-       if(bun_bit == 0x80) {
-            LedSetSwitch();
-            TimeSetLightFlag(7201);//clear
-            TimeSetWaterFlag(GrstReadWaterTime()+1);//clear
-       } else if(bun_bit == 0x90) {
-            static u8 bit = 0;
-            if(bit == 0) {
-                bit = 1;
-                TempSetLight(1);
-            } else {
-                bit = 0;
-                TempSetLight(0);
+        ButtonReadSwitch();//读取开关
+        bun_bit = ButtonReadMode();//设置模式
+        ButtonReadLight();//灯设置键
+        if(bun_bit >= 1) {
+            switch( bun_bit ) {
+                case 1:
+                GrstSetWaterTime(60);
+                GrstSetLightTime(5040);//设置灯亮的时间
+                break;
+                case 2:
+                GrstSetWaterTime(60);
+                GrstSetLightTime(3600);//设置灯亮的时间
+                break;
+                case 3:
+                GrstSetWaterTime(60);
+                GrstSetLightTime(7200);//设置灯亮的时间
+                break;
+                default:
+                break;
             }
-       }
+            TimeSetLightFlag(1);//clear
+            TimeSetWaterFlag(1);//clear
+        }
     }
 }
